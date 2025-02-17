@@ -6,41 +6,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Drunk Rabbit Game</title>
     <style>
-      /* Center the canvas and set a black background */
+      /* Basic page and canvas styling */
       body { 
         background: #000; 
         margin: 0; 
         display: flex; 
         justify-content: center; 
         align-items: center; 
-        height: 100vh; 
+        height: 100vh;
+        position: relative; /* for overlay positioning */
       }
       canvas { 
         background: #000;
       }
+      /* Menu overlay styling */
+      #menuOverlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 20;
+      }
+      #menuOverlay h1 {
+        font-size: 36px;
+        margin-bottom: 20px;
+      }
+      #menuOverlay p {
+        font-size: 18px;
+      }
+      #menuOverlay select, 
+      #menuOverlay button {
+        font-size: 16px;
+        padding: 10px;
+        margin: 10px;
+      }
+      /* "Change Screen Size" button styling */
+      #changeSizeButton {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        font-size: 14px;
+        padding: 8px 12px;
+        z-index: 30;
+        display: none;  /* initially hidden */
+      }
     </style>
   </head>
   <body>
-    <!-- Keep the internal resolution fixed -->
+    <!-- The game canvas -->
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 
-    <!-- Script to scale the canvas for mobile devices without cutting content -->
+    <!-- Menu overlay: options before starting the game (or when changing size) -->
+    <div id="menuOverlay">
+      <h1>Drunk Rabbit Game</h1>
+      <p>Select Game Size:</p>
+      <select id="gameSizeSelect">
+        <option value="auto">Auto Fit</option>
+        <option value="0.75">Small</option>
+        <option value="1">Medium</option>
+        <option value="1.25">Large</option>
+      </select>
+      <button id="startGameButton">Start Game</button>
+    </div>
+
+    <!-- "Change Screen Size" button (appears on Game Over) -->
+    <button id="changeSizeButton">Change Screen Size</button>
+
+    <!-- Script to handle canvas scaling and menu interactions -->
     <script>
+      // Global variable to hold the chosen scale.
+      // If set to a number, it will override auto-fit.
+      let customScale = null;
+      const canvas = document.getElementById("gameCanvas");
+
       function scaleCanvas() {
-        const canvas = document.getElementById("gameCanvas");
-        // Fixed game resolution
         const gameWidth = 800;
         const gameHeight = 600;
-        // Calculate the scale factor to fit the canvas inside the viewport
-        const scale = Math.min(window.innerWidth / gameWidth, window.innerHeight / gameHeight);
-        // Apply the scale factor using CSS (this does not change the internal resolution)
-        canvas.style.width = (gameWidth * scale) + "px";
-        canvas.style.height = (gameHeight * scale) + "px";
+        if (customScale && customScale !== 'auto') {
+          // Use the player-selected scale.
+          canvas.style.width = (gameWidth * customScale) + "px";
+          canvas.style.height = (gameHeight * customScale) + "px";
+        } else {
+          // Auto-fit: calculate scale factor based on the viewport.
+          const scale = Math.min(window.innerWidth / gameWidth, window.innerHeight / gameHeight);
+          canvas.style.width = (gameWidth * scale) + "px";
+          canvas.style.height = (gameHeight * scale) + "px";
+        }
       }
-      // Scale when the page loads
+
+      // Scale canvas when page loads and on resize.
       document.addEventListener('DOMContentLoaded', scaleCanvas);
-      // Recalculate scaling if the window size changes (e.g., orientation change)
       window.addEventListener('resize', scaleCanvas);
+
+      // Handle the menu "Start Game" button.
+      document.getElementById("startGameButton").addEventListener("click", function() {
+        const select = document.getElementById("gameSizeSelect");
+        const selectedValue = select.value;
+        if (selectedValue !== "auto") {
+          customScale = parseFloat(selectedValue);
+        } else {
+          customScale = null;
+        }
+        // Recalculate canvas scaling based on selection.
+        scaleCanvas();
+        // Hide the menu overlay.
+        document.getElementById("menuOverlay").style.display = "none";
+        // Hide the change size button if visible.
+        document.getElementById("changeSizeButton").style.display = "none";
+        // If a reset function exists (from game.js), call it to restart the game.
+        if (window.resetGame) {
+          window.resetGame();
+        }
+      });
+
+      // Handle the "Change Screen Size" button.
+      document.getElementById("changeSizeButton").addEventListener("click", function() {
+        // Show the menu overlay so the player can change the size.
+        document.getElementById("menuOverlay").style.display = "flex";
+      });
     </script>
 
     <!-- Link to your game JavaScript file -->
