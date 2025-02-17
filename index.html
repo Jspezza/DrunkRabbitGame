@@ -12,7 +12,7 @@
         margin: 0; 
         display: flex; 
         justify-content: center; 
-        align-items: center; 
+        align-items: center;
         height: 100vh;
         position: relative; /* for overlay positioning */
       }
@@ -46,6 +46,18 @@
         padding: 10px;
         margin: 10px;
       }
+      /* Name input styling */
+      #playerNameContainer {
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #playerNameInput {
+        padding: 8px;
+        font-size: 16px;
+        margin-top: 5px;
+      }
       /* Manual adjustment controls */
       #manualControls {
         margin: 10px;
@@ -67,6 +79,28 @@
         z-index: 30;
         display: none;  /* initially hidden */
       }
+      /* Leaderboard Container Styling */
+      #leaderboardContainer {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255,255,255,0.8);
+        padding: 10px;
+        border-radius: 5px;
+        max-height: 90vh;
+        overflow-y: auto;
+        z-index: 25;
+      }
+      #leaderboardContainer h2 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+      }
+      #leaderboardContainer ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 14px;
+      }
     </style>
   </head>
   <body>
@@ -77,6 +111,11 @@
     <div id="menuOverlay">
       <h1>Drunk Rabbit Game</h1>
       <p>Game Size: <strong>Auto Fit</strong></p>
+      <!-- Name input container -->
+      <div id="playerNameContainer">
+        <label for="playerNameInput">Enter your name:</label>
+        <input type="text" id="playerNameInput" placeholder="Your name">
+      </div>
       <label>
         <input type="checkbox" id="manualToggle">
         Enable Manual Adjustment
@@ -91,6 +130,12 @@
     
     <!-- "Change Screen Size" button (appears on Game Over) -->
     <button id="changeSizeButton">Change Screen Size</button>
+
+    <!-- Leaderboard Container -->
+    <div id="leaderboardContainer">
+      <h2>Leaderboard</h2>
+      <ul id="leaderboardList"></ul>
+    </div>
     
     <!-- Script to handle canvas scaling and menu interactions -->
     <script>
@@ -144,8 +189,15 @@
         }
       });
       
-      // Start Game button: hides the menu overlay and resets the game if available.
+      // Start Game button: validates the player's name, hides the menu overlay, and resets the game if available.
       document.getElementById("startGameButton").addEventListener("click", function() {
+        const nameInput = document.getElementById("playerNameInput").value.trim();
+        if (nameInput === "") {
+          alert("Please enter your name to start the game.");
+          return;
+        }
+        // Save the player's name globally for this session.
+        window.playerName = nameInput;
         document.getElementById("menuOverlay").style.display = "none";
         document.getElementById("changeSizeButton").style.display = "none";
         if (window.resetGame) {
@@ -157,6 +209,75 @@
       document.getElementById("changeSizeButton").addEventListener("click", function() {
         document.getElementById("menuOverlay").style.display = "flex";
       });
+    </script>
+    
+    <!-- Firebase Integration -->
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
+      import {
+        getDatabase,
+        ref,
+        push,
+        set,
+        onValue,
+        query,
+        orderByChild
+      } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyDAbMV6qFR2ejJHx2bpgZGa1MYumIZ_YGU",
+        authDomain: "drunkrabbitgame-84bd1.firebaseapp.com",
+        databaseURL: "https://drunkrabbitgame-84bd1-default-rtdb.firebaseio.com",
+        projectId: "drunkrabbitgame-84bd1",
+        storageBucket: "drunkrabbitgame-84bd1.firebasestorage.app",
+        messagingSenderId: "386211740384",
+        appId: "1:386211740384:web:18f257eb581787b1a96e85",
+        measurementId: "G-PMBD060K3T"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const db = getDatabase(app);
+
+      // Function to submit a new score
+      export function submitScore(playerName, score) {
+        const scoreData = { name: playerName, score: score };
+        const newScoreRef = push(ref(db, "leaderboard"));
+        set(newScoreRef, scoreData)
+          .then(() => console.log("Score submitted successfully."))
+          .catch((error) => console.error("Error submitting score:", error));
+      }
+
+      // Listen for changes on the leaderboard and update UI
+      const leaderboardRef = ref(db, "leaderboard");
+      const leaderboardQuery = query(leaderboardRef, orderByChild("score"));
+      onValue(leaderboardQuery, (snapshot) => {
+        const leaderboardData = [];
+        snapshot.forEach(childSnapshot => {
+          leaderboardData.push(childSnapshot.val());
+        });
+        // Reverse the array to show highest scores first
+        leaderboardData.reverse();
+        updateLeaderboardUI(leaderboardData);
+      });
+
+      // Update the leaderboard UI
+      function updateLeaderboardUI(data) {
+        const leaderboardList = document.getElementById("leaderboardList");
+        leaderboardList.innerHTML = ""; // Clear current list
+        data.forEach((entry, index) => {
+          const li = document.createElement("li");
+          li.textContent = `${index + 1}. ${entry.name}: ${entry.score}`;
+          leaderboardList.appendChild(li);
+        });
+      }
+
+      // Expose the submitScore function globally so that game.js can access it.
+      window.submitScore = submitScore;
     </script>
     
     <!-- Link to your game JavaScript file -->
