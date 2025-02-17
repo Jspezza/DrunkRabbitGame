@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <!-- This meta tag ensures proper scaling on mobile devices -->
+    <!-- Ensure proper scaling on mobile devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Drunk Rabbit Game</title>
     <style>
@@ -17,23 +17,31 @@
       }
       canvas { 
         background: #000;
-        /* By default, use the fixed size (800x600) */
-        width: 800px;
-        height: 600px;
-      }
-      /* Media query for mobile devices */
-      @media (max-width: 600px) {
-        canvas {
-          /* Stretch the canvas to fill the screen width */
-          width: 100%;
-          /* Height is auto to preserve aspect ratio (800x600 ~ 4:3) */
-          height: auto;
-        }
+        /* The actual size is set via JavaScript */
       }
     </style>
   </head>
   <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <!-- Remove fixed width/height attributes -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Inline script to set canvas dimensions based on device -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var canvas = document.getElementById("gameCanvas");
+        // If the viewport width is less than 800px (i.e., likely a mobile device),
+        // set the canvas to fill the entire viewport.
+        if (window.innerWidth < 800) {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        } else {
+          // Otherwise, use the default desktop dimensions.
+          canvas.width = 800;
+          canvas.height = 600;
+        }
+      });
+    </script>
+
     <!-- Link to the game JavaScript file -->
     <script src="game.js"></script>
   </body>
