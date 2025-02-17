@@ -17,32 +17,33 @@
       }
       canvas { 
         background: #000;
-        /* The actual size is set via JavaScript */
       }
     </style>
   </head>
   <body>
-    <!-- Remove fixed width/height attributes -->
-    <canvas id="gameCanvas"></canvas>
+    <!-- Keep the internal resolution fixed -->
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
 
-    <!-- Inline script to set canvas dimensions based on device -->
+    <!-- Script to scale the canvas for mobile devices without cutting content -->
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        var canvas = document.getElementById("gameCanvas");
-        // If the viewport width is less than 800px (i.e., likely a mobile device),
-        // set the canvas to fill the entire viewport.
-        if (window.innerWidth < 800) {
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-        } else {
-          // Otherwise, use the default desktop dimensions.
-          canvas.width = 800;
-          canvas.height = 600;
-        }
-      });
+      function scaleCanvas() {
+        const canvas = document.getElementById("gameCanvas");
+        // Fixed game resolution
+        const gameWidth = 800;
+        const gameHeight = 600;
+        // Calculate the scale factor to fit the canvas inside the viewport
+        const scale = Math.min(window.innerWidth / gameWidth, window.innerHeight / gameHeight);
+        // Apply the scale factor using CSS (this does not change the internal resolution)
+        canvas.style.width = (gameWidth * scale) + "px";
+        canvas.style.height = (gameHeight * scale) + "px";
+      }
+      // Scale when the page loads
+      document.addEventListener('DOMContentLoaded', scaleCanvas);
+      // Recalculate scaling if the window size changes (e.g., orientation change)
+      window.addEventListener('resize', scaleCanvas);
     </script>
 
-    <!-- Link to the game JavaScript file -->
+    <!-- Link to your game JavaScript file -->
     <script src="game.js"></script>
   </body>
 </html>
