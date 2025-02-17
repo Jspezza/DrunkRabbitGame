@@ -99,8 +99,7 @@
         margin: 0;
         font-size: 14px;
       }
-      /* Mobile Leaderboard (default hidden/unhidden via JS) */
-      /* When visible on mobile, the leaderboard will be horizontal and smaller */
+      /* Mobile Leaderboard (horizontal layout) */
       @media only screen and (max-width: 768px) {
         #leaderboardContainer {
           position: fixed;
@@ -138,27 +137,22 @@
           border: none;
           border-radius: 3px;
         }
-      }
-      /* Mobile "Show Leaderboard" button (appears when leaderboard is hidden) */
-      #mobileLeaderboardShowButton {
-         display: none; /* Only visible on mobile when leaderboard is hidden */
-      }
-      @media only screen and (max-width: 768px) {
+        /* Mobile "Show Leaderboard" button – initial state is hidden */
         #mobileLeaderboardShowButton {
-           display: block;
-           position: fixed;
-           bottom: 10px;
-           left: 10px;
-           font-size: 12px;
-           padding: 5px 8px;
-           z-index: 50;
-           background: rgba(255,255,255,0.8);
-           border: 1px solid #000;
-           border-radius: 3px;
-           cursor: pointer;
+          display: none;
+          position: fixed;
+          bottom: 10px;
+          left: 10px;
+          font-size: 12px;
+          padding: 5px 8px;
+          z-index: 50;
+          background: rgba(255,255,255,0.8);
+          border: 1px solid #000;
+          border-radius: 3px;
+          cursor: pointer;
         }
       }
-      /* Full Leaderboard Modal Styling (same for desktop and mobile) */
+      /* Full Leaderboard Modal Styling (applies to all devices) */
       #fullLeaderboardContainer {
         display: none;
         position: fixed;
@@ -239,7 +233,6 @@
     <!-- Script to handle canvas scaling and menu interactions -->
     <script>
       // Global variable for manual scaling.
-      // If customScale is null, auto-fit is used.
       let customScale = null;
       const canvas = document.getElementById("gameCanvas");
       
@@ -251,15 +244,19 @@
           canvas.style.width = (gameWidth * customScale) + "px";
           canvas.style.height = (gameHeight * customScale) + "px";
         } else {
-          // Auto-fit: calculate scale factor based on the viewport.
           const scale = Math.min(window.innerWidth / gameWidth, window.innerHeight / gameHeight);
           canvas.style.width = (gameWidth * scale) + "px";
           canvas.style.height = (gameHeight * scale) + "px";
         }
       }
       
-      // Initial scaling on page load and when resizing.
-      document.addEventListener('DOMContentLoaded', scaleCanvas);
+      document.addEventListener('DOMContentLoaded', () => {
+        scaleCanvas();
+        // On mobile devices, ensure the mobile show button starts hidden.
+        if (window.innerWidth <= 768) {
+          document.getElementById("mobileLeaderboardShowButton").style.display = "none";
+        }
+      });
       window.addEventListener('resize', scaleCanvas);
       
       // Manual adjustment toggle and slider controls.
@@ -271,7 +268,6 @@
       manualToggle.addEventListener("change", function() {
         if (this.checked) {
           manualControls.style.display = "block";
-          // When manual adjustment is enabled, use the slider's current value.
           customScale = parseFloat(scaleSlider.value);
         } else {
           manualControls.style.display = "none";
@@ -288,14 +284,13 @@
         }
       });
       
-      // Start Game button: validates the player's name, hides the menu overlay, and resets the game if available.
+      // Start Game button: validates the player's name and starts the game.
       document.getElementById("startGameButton").addEventListener("click", function() {
         const nameInput = document.getElementById("playerNameInput").value.trim();
         if (nameInput === "") {
           alert("Please enter your name to start the game.");
           return;
         }
-        // Save the player's name globally for this session.
         window.playerName = nameInput;
         document.getElementById("menuOverlay").style.display = "none";
         document.getElementById("changeSizeButton").style.display = "none";
@@ -312,7 +307,6 @@
     
     <!-- Firebase Integration and Leaderboard Scripts -->
     <script type="module">
-      // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
       import {
@@ -325,7 +319,6 @@
         orderByChild
       } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js";
 
-      // Your web app's Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyDAbMV6qFR2ejJHx2bpgZGa1MYumIZ_YGU",
         authDomain: "drunkrabbitgame-84bd1.firebaseapp.com",
@@ -337,12 +330,10 @@
         measurementId: "G-PMBD060K3T"
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
       const db = getDatabase(app);
 
-      // Function to submit a new score
       export function submitScore(playerName, score) {
         const scoreData = { name: playerName, score: score };
         const newScoreRef = push(ref(db, "leaderboard"));
@@ -351,7 +342,6 @@
           .catch((error) => console.error("Error submitting score:", error));
       }
 
-      // Listen for changes on the leaderboard and update UI
       const leaderboardRef = ref(db, "leaderboard");
       const leaderboardQuery = query(leaderboardRef, orderByChild("score"));
       onValue(leaderboardQuery, (snapshot) => {
@@ -359,14 +349,11 @@
         snapshot.forEach(childSnapshot => {
           leaderboardData.push(childSnapshot.val());
         });
-        // Reverse the array to show highest scores first
         leaderboardData.reverse();
         updateLeaderboardUI(leaderboardData);
       });
 
-      // Update both the top 5 and full leaderboard UI
       function updateLeaderboardUI(data) {
-        // Update top 5 leaderboard (for both desktop and mobile)
         const leaderboardListTop = document.getElementById("leaderboardListTop");
         leaderboardListTop.innerHTML = "";
         data.slice(0, 5).forEach((entry, index) => {
@@ -375,7 +362,6 @@
           leaderboardListTop.appendChild(li);
         });
         
-        // Update full leaderboard
         const leaderboardListFull = document.getElementById("leaderboardListFull");
         leaderboardListFull.innerHTML = "";
         data.forEach((entry, index) => {
@@ -385,49 +371,40 @@
         });
       }
 
-      // Expose the submitScore function globally so that game.js can access it.
       window.submitScore = submitScore;
 
-      // --- Mobile Hide/Show Leaderboard Functionality ---
-      // (This functionality only applies on mobile devices.)
+      // Mobile Hide/Show Leaderboard Functionality
       const mobileToggleBtn = document.getElementById("mobileLeaderboardToggle");
       const mobileShowBtn = document.getElementById("mobileLeaderboardShowButton");
       const leaderboardContainer = document.getElementById("leaderboardContainer");
 
-      // Only add mobile toggle listeners if the screen is narrow.
       function isMobile() {
         return window.innerWidth <= 768;
       }
       
       if (isMobile()) {
-        // When the hide button is tapped, hide the leaderboard container and show the small "Show" button.
         mobileToggleBtn.addEventListener("click", function() {
           leaderboardContainer.style.display = "none";
           mobileShowBtn.style.display = "block";
         });
         
-        // When the small "Show Leaderboard" button is tapped, show the leaderboard container.
         mobileShowBtn.addEventListener("click", function() {
           leaderboardContainer.style.display = "flex";
           mobileShowBtn.style.display = "none";
         });
       }
       
-      // Also update the mobile toggle behavior on window resize.
       window.addEventListener("resize", function() {
         if (isMobile()) {
-          // Ensure that if the leaderboard was hidden, the mobile show button is visible.
           if (leaderboardContainer.style.display === "none") {
             mobileShowBtn.style.display = "block";
           }
         } else {
-          // On desktop, always show the leaderboard container and hide the mobile button.
           leaderboardContainer.style.display = "block";
           mobileShowBtn.style.display = "none";
         }
       });
-
-      // Event listener for full leaderboard modal (works on both mobile and desktop)
+      
       document.getElementById("toggleFullLeaderboard").addEventListener("click", function(){
           document.getElementById("fullLeaderboardContainer").style.display = "block";
       });
