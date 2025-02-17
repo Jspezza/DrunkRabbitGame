@@ -79,7 +79,7 @@
         z-index: 30;
         display: none;  /* initially hidden */
       }
-      /* Leaderboard Container Styling */
+      /* Top 5 Leaderboard Container Styling */
       #leaderboardContainer {
         position: absolute;
         top: 10px;
@@ -87,8 +87,6 @@
         background: rgba(255,255,255,0.8);
         padding: 10px;
         border-radius: 5px;
-        max-height: 90vh;
-        overflow-y: auto;
         z-index: 25;
       }
       #leaderboardContainer h2 {
@@ -99,6 +97,34 @@
         list-style: none;
         padding: 0;
         margin: 0;
+        font-size: 14px;
+      }
+      /* Full Leaderboard Modal Styling */
+      #fullLeaderboardContainer {
+        display: none;
+        position: fixed;
+        top: 10%;
+        left: 10%;
+        width: 80%;
+        height: 80%;
+        background: rgba(255,255,255,0.95);
+        overflow-y: auto;
+        z-index: 50;
+        border: 2px solid #000;
+        border-radius: 10px;
+        padding: 20px;
+      }
+      #fullLeaderboardContainer h2 {
+        margin-top: 0;
+      }
+      #fullLeaderboardContainer ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 14px;
+      }
+      #fullLeaderboardContainer button {
+        margin-top: 10px;
         font-size: 14px;
       }
     </style>
@@ -131,10 +157,18 @@
     <!-- "Change Screen Size" button (appears on Game Over) -->
     <button id="changeSizeButton">Change Screen Size</button>
 
-    <!-- Leaderboard Container -->
+    <!-- Top 5 Leaderboard Container -->
     <div id="leaderboardContainer">
-      <h2>Leaderboard</h2>
-      <ul id="leaderboardList"></ul>
+      <h2>Top 5</h2>
+      <ul id="leaderboardListTop"></ul>
+      <button id="toggleFullLeaderboard" style="margin-top: 10px; font-size: 14px;">Show Full Leaderboard</button>
+    </div>
+    
+    <!-- Full Leaderboard Modal -->
+    <div id="fullLeaderboardContainer">
+      <h2>Full Leaderboard</h2>
+      <ul id="leaderboardListFull"></ul>
+      <button id="closeFullLeaderboard">Close</button>
     </div>
     
     <!-- Script to handle canvas scaling and menu interactions -->
@@ -211,7 +245,7 @@
       });
     </script>
     
-    <!-- Firebase Integration -->
+    <!-- Firebase Integration and Leaderboard Scripts -->
     <script type="module">
       // Import the functions you need from the SDKs you need
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
@@ -265,19 +299,37 @@
         updateLeaderboardUI(leaderboardData);
       });
 
-      // Update the leaderboard UI
+      // Update both the top 5 and full leaderboard UI
       function updateLeaderboardUI(data) {
-        const leaderboardList = document.getElementById("leaderboardList");
-        leaderboardList.innerHTML = ""; // Clear current list
+        // Update top 5 leaderboard
+        const leaderboardListTop = document.getElementById("leaderboardListTop");
+        leaderboardListTop.innerHTML = "";
+        data.slice(0, 5).forEach((entry, index) => {
+          const li = document.createElement("li");
+          li.textContent = `${index + 1}. ${entry.name}: ${entry.score}`;
+          leaderboardListTop.appendChild(li);
+        });
+        
+        // Update full leaderboard
+        const leaderboardListFull = document.getElementById("leaderboardListFull");
+        leaderboardListFull.innerHTML = "";
         data.forEach((entry, index) => {
           const li = document.createElement("li");
           li.textContent = `${index + 1}. ${entry.name}: ${entry.score}`;
-          leaderboardList.appendChild(li);
+          leaderboardListFull.appendChild(li);
         });
       }
 
       // Expose the submitScore function globally so that game.js can access it.
       window.submitScore = submitScore;
+
+      // Event listeners to toggle full leaderboard modal
+      document.getElementById("toggleFullLeaderboard").addEventListener("click", function(){
+          document.getElementById("fullLeaderboardContainer").style.display = "block";
+      });
+      document.getElementById("closeFullLeaderboard").addEventListener("click", function(){
+          document.getElementById("fullLeaderboardContainer").style.display = "none";
+      });
     </script>
     
     <!-- Link to your game JavaScript file -->
