@@ -51,6 +51,9 @@
         margin: 10px;
         display: none;
       }
+      #manualControls p {
+        margin: 5px 0;
+      }
       #manualControls input[type="range"] {
         width: 300px;
       }
@@ -76,11 +79,12 @@
       <p>Game Size: <strong>Auto Fit</strong></p>
       <label>
         <input type="checkbox" id="manualToggle">
-        Manual Adjustment
+        Enable Manual Adjustment
       </label>
+      <!-- Manual adjustment controls: one slider for both dimensions -->
       <div id="manualControls">
         <p>Scale: <span id="scaleValue">1.0</span></p>
-        <input type="range" id="scaleSlider" min="0.5" max="2" step="0.01" value="1.0">
+        <input type="range" id="scaleSlider" min="0.2" max="2" step="0.01" value="1.0">
       </div>
       <button id="startGameButton">Start Game</button>
     </div>
@@ -95,7 +99,7 @@
       let customScale = null;
       const canvas = document.getElementById("gameCanvas");
       
-      // Scale canvas based on the chosen manual scale or auto-fit.
+      // Scale the canvas based on the chosen manual scale or auto-fit.
       function scaleCanvas() {
         const gameWidth = 800;
         const gameHeight = 600;
@@ -103,14 +107,14 @@
           canvas.style.width = (gameWidth * customScale) + "px";
           canvas.style.height = (gameHeight * customScale) + "px";
         } else {
-          // Auto-fit: calculate the scale factor based on the viewport.
+          // Auto-fit: calculate scale factor based on the viewport.
           const scale = Math.min(window.innerWidth / gameWidth, window.innerHeight / gameHeight);
           canvas.style.width = (gameWidth * scale) + "px";
           canvas.style.height = (gameHeight * scale) + "px";
         }
       }
       
-      // Initial scaling on page load and when resizing the window.
+      // Initial scaling on page load and when resizing.
       document.addEventListener('DOMContentLoaded', scaleCanvas);
       window.addEventListener('resize', scaleCanvas);
       
@@ -123,7 +127,7 @@
       manualToggle.addEventListener("change", function() {
         if (this.checked) {
           manualControls.style.display = "block";
-          // When manual adjustment is on, use the slider's current value.
+          // When manual adjustment is enabled, use the slider's current value.
           customScale = parseFloat(scaleSlider.value);
         } else {
           manualControls.style.display = "none";
@@ -140,7 +144,7 @@
         }
       });
       
-      // Start Game button: hides the menu overlay and resets the game.
+      // Start Game button: hides the menu overlay and resets the game if available.
       document.getElementById("startGameButton").addEventListener("click", function() {
         document.getElementById("menuOverlay").style.display = "none";
         document.getElementById("changeSizeButton").style.display = "none";
