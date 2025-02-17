@@ -2,6 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <!-- This meta tag ensures proper scaling on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Drunk Rabbit Game</title>
     <style>
       /* Center the canvas and set a black background */
@@ -14,7 +16,19 @@
         height: 100vh; 
       }
       canvas { 
-        background: #000; 
+        background: #000;
+        /* By default, use the fixed size (800x600) */
+        width: 800px;
+        height: 600px;
+      }
+      /* Media query for mobile devices */
+      @media (max-width: 600px) {
+        canvas {
+          /* Stretch the canvas to fill the screen width */
+          width: 100%;
+          /* Height is auto to preserve aspect ratio (800x600 ~ 4:3) */
+          height: auto;
+        }
       }
     </style>
   </head>
