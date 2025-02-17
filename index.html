@@ -1,23 +1,49 @@
-<script>
-  function scaleCanvas() {
-    const canvas = document.getElementById("gameCanvas");
-    const gameWidth = 800;
-    const gameHeight = 600;
-    
-    if ("ontouchstart" in window) {
-      // For mobile devices, stretch the canvas to fill the screen
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
-    } else {
-      // For desktops, maintain aspect ratio so the entire game is visible
-      const scale = Math.min(window.innerWidth / gameWidth, window.innerHeight / gameHeight);
-      canvas.style.width = (gameWidth * scale) + "px";
-      canvas.style.height = (gameHeight * scale) + "px";
-    }
-  }
-  
-  // Scale when the page loads
-  document.addEventListener('DOMContentLoaded', scaleCanvas);
-  // Recalculate scaling if the window size changes (e.g., orientation change)
-  window.addEventListener('resize', scaleCanvas);
-</script>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <!-- Ensure proper scaling on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Drunk Rabbit Game</title>
+    <style>
+      /* Center the canvas and set a black background */
+      body { 
+        background: #000; 
+        margin: 0; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+      }
+      canvas { 
+        background: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Keep the internal resolution fixed -->
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <!-- Script to scale the canvas for mobile devices without cutting content -->
+    <script>
+      function scaleCanvas() {
+        const canvas = document.getElementById("gameCanvas");
+        // Fixed game resolution
+        const gameWidth = 800;
+        const gameHeight = 600;
+        // Calculate the scale factor to fit the canvas inside the viewport
+        const scale = Math.min(window.innerWidth / gameWidth, window.innerHeight / gameHeight);
+        // Apply the scale factor using CSS (this does not change the internal resolution)
+        canvas.style.width = (gameWidth * scale) + "px";
+        canvas.style.height = (gameHeight * scale) + "px";
+      }
+      // Scale when the page loads
+      document.addEventListener('DOMContentLoaded', scaleCanvas);
+      // Recalculate scaling if the window size changes (e.g., orientation change)
+      window.addEventListener('resize', scaleCanvas);
+    </script>
+
+    <!-- Link to your game JavaScript file -->
+    <script src="game.js"></script>
+  </body>
+</html>
