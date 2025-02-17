@@ -79,7 +79,7 @@
         z-index: 30;
         display: none;  /* initially hidden */
       }
-      /* Top 5 Leaderboard Container Styling */
+      /* Top 5 Leaderboard Container Styling (Desktop) */
       #leaderboardContainer {
         position: absolute;
         top: 10px;
@@ -126,6 +126,17 @@
       #fullLeaderboardContainer button {
         margin-top: 10px;
         font-size: 14px;
+      }
+      /* Mobile Styles: Leaderboard repositioned to bottom center */
+      @media only screen and (max-width: 768px) {
+        #leaderboardContainer {
+          position: fixed;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          top: auto;
+          right: auto;
+        }
       }
     </style>
   </head>
