@@ -79,7 +79,7 @@
         z-index: 30;
         display: none;  /* initially hidden */
       }
-      /* Top 5 Leaderboard Container Styling (Desktop) */
+      /* Leaderboard Container for Desktop (vertical, top-right) */
       #leaderboardContainer {
         position: absolute;
         top: 10px;
@@ -99,7 +99,66 @@
         margin: 0;
         font-size: 14px;
       }
-      /* Full Leaderboard Modal Styling */
+      /* Mobile Leaderboard (default hidden/unhidden via JS) */
+      /* When visible on mobile, the leaderboard will be horizontal and smaller */
+      @media only screen and (max-width: 768px) {
+        #leaderboardContainer {
+          position: fixed;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          top: auto;
+          right: auto;
+          padding: 5px 8px;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+        }
+        #leaderboardContainer h2 {
+          display: none; /* Hide title to save space */
+        }
+        #leaderboardContainer ul {
+          display: flex;
+          flex-direction: row;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+        #leaderboardContainer ul li {
+          margin-right: 10px;
+          font-size: 12px;
+        }
+        /* Mobile hide toggle button inside the container */
+        #mobileLeaderboardToggle {
+          margin-left: auto;
+          font-size: 12px;
+          padding: 3px 6px;
+          cursor: pointer;
+          background: #ccc;
+          border: none;
+          border-radius: 3px;
+        }
+      }
+      /* Mobile "Show Leaderboard" button (appears when leaderboard is hidden) */
+      #mobileLeaderboardShowButton {
+         display: none; /* Only visible on mobile when leaderboard is hidden */
+      }
+      @media only screen and (max-width: 768px) {
+        #mobileLeaderboardShowButton {
+           display: block;
+           position: fixed;
+           bottom: 10px;
+           left: 10px;
+           font-size: 12px;
+           padding: 5px 8px;
+           z-index: 50;
+           background: rgba(255,255,255,0.8);
+           border: 1px solid #000;
+           border-radius: 3px;
+           cursor: pointer;
+        }
+      }
+      /* Full Leaderboard Modal Styling (same for desktop and mobile) */
       #fullLeaderboardContainer {
         display: none;
         position: fixed;
@@ -126,17 +185,6 @@
       #fullLeaderboardContainer button {
         margin-top: 10px;
         font-size: 14px;
-      }
-      /* Mobile Styles: Leaderboard repositioned to bottom center */
-      @media only screen and (max-width: 768px) {
-        #leaderboardContainer {
-          position: fixed;
-          bottom: 10px;
-          left: 50%;
-          transform: translateX(-50%);
-          top: auto;
-          right: auto;
-        }
       }
     </style>
   </head>
@@ -168,12 +216,18 @@
     <!-- "Change Screen Size" button (appears on Game Over) -->
     <button id="changeSizeButton">Change Screen Size</button>
 
-    <!-- Top 5 Leaderboard Container -->
+    <!-- Leaderboard Container (always shows top 5) -->
     <div id="leaderboardContainer">
       <h2>Top 5</h2>
       <ul id="leaderboardListTop"></ul>
-      <button id="toggleFullLeaderboard" style="margin-top: 10px; font-size: 14px;">Show Full Leaderboard</button>
+      <!-- Mobile only: hide toggle button inside leaderboard -->
+      <button id="mobileLeaderboardToggle">Hide</button>
+      <!-- Desktop still uses "Show Full Leaderboard" as before -->
+      <button id="toggleFullLeaderboard" style="margin-left: 10px; font-size: 14px;">Show Full Leaderboard</button>
     </div>
+    
+    <!-- Mobile Show Leaderboard Button (appears when leaderboard is hidden) -->
+    <button id="mobileLeaderboardShowButton">Show Leaderboard</button>
     
     <!-- Full Leaderboard Modal -->
     <div id="fullLeaderboardContainer">
@@ -312,7 +366,7 @@
 
       // Update both the top 5 and full leaderboard UI
       function updateLeaderboardUI(data) {
-        // Update top 5 leaderboard
+        // Update top 5 leaderboard (for both desktop and mobile)
         const leaderboardListTop = document.getElementById("leaderboardListTop");
         leaderboardListTop.innerHTML = "";
         data.slice(0, 5).forEach((entry, index) => {
@@ -334,7 +388,46 @@
       // Expose the submitScore function globally so that game.js can access it.
       window.submitScore = submitScore;
 
-      // Event listeners to toggle full leaderboard modal
+      // --- Mobile Hide/Show Leaderboard Functionality ---
+      // (This functionality only applies on mobile devices.)
+      const mobileToggleBtn = document.getElementById("mobileLeaderboardToggle");
+      const mobileShowBtn = document.getElementById("mobileLeaderboardShowButton");
+      const leaderboardContainer = document.getElementById("leaderboardContainer");
+
+      // Only add mobile toggle listeners if the screen is narrow.
+      function isMobile() {
+        return window.innerWidth <= 768;
+      }
+      
+      if (isMobile()) {
+        // When the hide button is tapped, hide the leaderboard container and show the small "Show" button.
+        mobileToggleBtn.addEventListener("click", function() {
+          leaderboardContainer.style.display = "none";
+          mobileShowBtn.style.display = "block";
+        });
+        
+        // When the small "Show Leaderboard" button is tapped, show the leaderboard container.
+        mobileShowBtn.addEventListener("click", function() {
+          leaderboardContainer.style.display = "flex";
+          mobileShowBtn.style.display = "none";
+        });
+      }
+      
+      // Also update the mobile toggle behavior on window resize.
+      window.addEventListener("resize", function() {
+        if (isMobile()) {
+          // Ensure that if the leaderboard was hidden, the mobile show button is visible.
+          if (leaderboardContainer.style.display === "none") {
+            mobileShowBtn.style.display = "block";
+          }
+        } else {
+          // On desktop, always show the leaderboard container and hide the mobile button.
+          leaderboardContainer.style.display = "block";
+          mobileShowBtn.style.display = "none";
+        }
+      });
+
+      // Event listener for full leaderboard modal (works on both mobile and desktop)
       document.getElementById("toggleFullLeaderboard").addEventListener("click", function(){
           document.getElementById("fullLeaderboardContainer").style.display = "block";
       });
