@@ -38,7 +38,6 @@ window.onload = function() {
   }
   loadImage("rabbit", "rabbit.png");
   loadImage("rabbit_drunk", "rabbit_drunk.png");
-  // Removed rabbit_carrot since it's not used.
   loadImage("rock", "rock.png");
   loadImage("beer", "beer.png");
   loadImage("carrot", "carrot.png");
@@ -54,16 +53,13 @@ window.onload = function() {
   }
   loadAudio("drunk2", "drunk2.mp3", 0.3);
   loadAudio("drunk3", "drunk3.mp3", 0.3);
-  // Store the two drunk tracks in an array
   const drunkTracks = [audio["drunk2"], audio["drunk3"]];
   loadAudio("post5000", "post5000.mp3", 1.0, true);
-  // Removed background audio since it's not used.
   loadAudio("carrot_sound", "carrot_sound.mp3");
   loadAudio("coin_sound", "coin_sound.mp3", 0.25);
 
-  // We simulate separate “channels” by keeping track of which audio is playing:
   let post5000Audio = audio["post5000"];
-  let drunkAudio = null; // will hold the currently playing drunk track
+  let drunkAudio = null; // currently playing drunk track
 
   // --- Game State Variables ---
   let gameStarted = false;
@@ -101,7 +97,7 @@ window.onload = function() {
   let beerList = [];
   let pillList = [];
   let rainDrops = [];
-  let distractions = []; // reserved for future visual distractions
+  let distractions = [];
 
   // Timers (accumulated ms for entity creation)
   let rockTimer = 0;
@@ -124,7 +120,6 @@ window.onload = function() {
              r2.y + r2.height < r1.y);
   }
 
-  // Mimics the get_valid_spawn_y from the Python code.
   function getValidSpawnY(entitySize) {
     let attempts = 0;
     while (attempts < 20) {
@@ -172,7 +167,6 @@ window.onload = function() {
   }
 
   // --- Event Listeners ---
-  // Desktop: jump via spacebar.
   document.addEventListener("keydown", function(e) {
     if (e.code === "Space") {
       if (!gameStarted) {
@@ -185,7 +179,6 @@ window.onload = function() {
     }
   });
 
-  // Mobile: if touch events are supported, use screen tap to jump.
   if ("ontouchstart" in window) {
     canvas.addEventListener("touchstart", function(e) {
       e.preventDefault();
@@ -209,22 +202,17 @@ window.onload = function() {
     requestAnimationFrame(gameLoop);
   }
 
-  // --- Update Function (Game Logic) ---
   function update() {
     if (!gameStarted) return;
     frameCount++;
 
-    // Increase timers (in ms; roughly 1000/FPS per frame)
     rockTimer += 1000 / FPS;
     coinTimer += 1000 / FPS;
     carrotTimer += 1000 / FPS;
     beerTimerEntity += 1000 / FPS;
 
     if (!gameOver) {
-      // Calculate current speed (scaling with score)
       const currentSpeed = BASE_ROCK_SPEED + (Math.min(score, 10000) / 10000) * (MAX_ROCK_SPEED - BASE_ROCK_SPEED);
-
-      // Apply gravity and update rabbit position
       rabbit.velY += GRAVITY;
       rabbit.y += rabbit.velY;
 
@@ -242,7 +230,6 @@ window.onload = function() {
 
       const rabbitRect = { x: rabbit.x, y: rabbit.y, width: rabbit.width, height: rabbit.height };
 
-      // Move obstacles and power-ups
       rockList.forEach(rock => { rock.x -= currentSpeed; });
       rockList = rockList.filter(rock => rock.x + rock.width > 0);
       coinList.forEach(coin => { coin.x -= currentSpeed; });
@@ -254,11 +241,10 @@ window.onload = function() {
       pillList.forEach(pill => { pill.x -= currentSpeed; });
       pillList = pillList.filter(pill => pill.x + pill.width > 0);
 
-      // Check collisions with rocks
       for (let i = 0; i < rockList.length; i++) {
         if (rectIntersect(rabbitRect, rockList[i])) {
           if (invincible) {
-            // Do nothing if invincible
+            // do nothing
           } else if (beerActive) {
             score -= 200;
             beerActive = false;
@@ -276,7 +262,6 @@ window.onload = function() {
         }
       }
 
-      // Check collision with coin
       for (let i = 0; i < coinList.length; i++) {
         if (rectIntersect(rabbitRect, coinList[i])) {
           score += 100;
@@ -289,7 +274,6 @@ window.onload = function() {
         }
       }
 
-      // Collision with carrot power-up
       for (let i = 0; i < carrotList.length; i++) {
         if (rectIntersect(rabbitRect, carrotList[i])) {
           invincible = true;
@@ -303,7 +287,6 @@ window.onload = function() {
         }
       }
 
-      // Collision with beer power-up
       for (let i = 0; i < beerList.length; i++) {
         if (rectIntersect(rabbitRect, beerList[i])) {
           beerActive = true;
@@ -314,7 +297,6 @@ window.onload = function() {
         }
       }
 
-      // Collision with pill power-up
       for (let i = 0; i < pillList.length; i++) {
         if (rectIntersect(rabbitRect, pillList[i])) {
           spareLife = true;
@@ -336,7 +318,6 @@ window.onload = function() {
         }
       }
 
-      // Increase score gradually
       score++;
 
       if (score > storedHighScore && !newHighTriggered) {
@@ -347,7 +328,6 @@ window.onload = function() {
         newHighTimer--;
       }
 
-      // Spawn pill power-up if conditions are met
       if (score >= 3000 && !spareLife && pillList.length === 0 &&
           (score === 3000 || (score - lastPillSpawnScore) >= 750)) {
         const pillY = getValidSpawnY(40);
@@ -356,7 +336,6 @@ window.onload = function() {
         lastPillSpawnScore = score;
       }
 
-      // Thunderstorm and lightning effect (for scores >= 4000)
       if (score >= 4000) {
         thunderTimer--;
         if (thunderTimer <= 0) {
@@ -372,9 +351,7 @@ window.onload = function() {
         }
       }
 
-      // --- Create New Entities Based on Timers ---
       if (rockTimer >= 1500) {
-        // Create a pair of rock obstacles (top and bottom)
         const obstacleWidth = getRandomInt(100, 150);
         const difficultyFactor = Math.min(score / 5000, 1.0);
         const minGapEasy = 180;
@@ -393,14 +370,14 @@ window.onload = function() {
         rockTimer = 0;
       }
       if (coinTimer >= 2500) {
-        const coinY = getValidSpawnY(30); // coin diameter = 30 (radius 15)
+        const coinY = getValidSpawnY(30);
         const coinRect = { x: WIDTH, y: coinY - 15, width: 30, height: 30 };
         coinList.push(coinRect);
         coinTimer = 0;
       }
       if (carrotTimer >= 10000) {
         if (carrotList.length === 0 && beerList.length === 0) {
-          const carrotY = getValidSpawnY(40); // carrot diameter = 40 (radius 20)
+          const carrotY = getValidSpawnY(40);
           const carrotRect = { x: WIDTH, y: carrotY - 20, width: 40, height: 40 };
           carrotList.push(carrotRect);
         }
@@ -415,13 +392,18 @@ window.onload = function() {
         beerTimerEntity = 0;
       }
     } else {
-      // On game over, record the score once
+      // On game over, record the score and submit to Firebase using the stored player name.
       if (!scoreRecorded) {
         scoreHistory.push(score);
         if (scoreHistory.length > 10) {
           scoreHistory.shift();
         }
         scoreRecorded = true;
+        
+        // Use the globally stored player name.
+        if (window.playerName && window.submitScore) {
+          window.submitScore(window.playerName, score);
+        }
       }
       if (score > storedHighScore) {
         storedHighScore = score;
@@ -438,9 +420,7 @@ window.onload = function() {
         drunkAudio = null;
       }
     } else {
-      // No background audio; only handle drunk mode.
       if (beerActive && !drunkAudio) {
-        // Choose a random drunk track and play it on loop
         const track = drunkTracks[getRandomInt(0, drunkTracks.length - 1)];
         track.currentTime = 0;
         track.loop = true;
@@ -452,7 +432,7 @@ window.onload = function() {
       }
     }
 
-    // --- Calculate Offsets for Drunk/Lightning Effects ---
+    // --- Calculate Offsets ---
     if (beerActive) {
       offsetX = 20 * Math.sin(frameCount / 5.0);
       offsetY = 20 * Math.cos(frameCount / 5.0);
@@ -465,15 +445,14 @@ window.onload = function() {
       offsetY += getRandomInt(-15, 15);
     }
 
-    // --- Heavy Rain Drops (for score >= 3000) ---
+    // --- Heavy Rain Drops ---
     if (score >= 3000) {
-      // Generate heavy rain: 20 drops per frame with fixed speed and drop length.
       for (let i = 0; i < 20; i++) {
         rainDrops.push({
           x: getRandomInt(0, WIDTH),
           y: getRandomInt(-50, 0),
-          speed: 10,    // fixed speed for heavy rain
-          length: 20    // fixed drop length for heavy rain
+          speed: 10,
+          length: 20
         });
       }
       rainDrops.forEach(drop => { drop.y += drop.speed; });
@@ -483,7 +462,6 @@ window.onload = function() {
 
   // --- Draw Function ---
   function draw() {
-    // Choose background color theme based on score
     const bgThemes = [
       COLORS.SKY_BLUE,
       "rgb(240,248,255)",
@@ -494,20 +472,16 @@ window.onload = function() {
     const bgIndex = Math.floor(score / 1000) % bgThemes.length;
     const bgColor = bgThemes[bgIndex];
 
-    // Create an offscreen canvas for the scene (to allow for offsets)
     const sceneCanvas = document.createElement("canvas");
     sceneCanvas.width = WIDTH;
     sceneCanvas.height = HEIGHT;
     const sceneCtx = sceneCanvas.getContext("2d");
 
-    // Draw scene background
     sceneCtx.fillStyle = bgColor;
     sceneCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
-    // Draw rocks
     rockList.forEach(rock => {
       if (images["rock"] && images["rock"].complete) {
-        // For top rocks, flip vertically
         if (rock.y === 0) {
           sceneCtx.save();
           sceneCtx.translate(rock.x + rock.width/2, rock.y + rock.height/2);
@@ -523,7 +497,6 @@ window.onload = function() {
       }
     });
 
-    // Draw coins
     coinList.forEach(coin => {
       sceneCtx.beginPath();
       sceneCtx.fillStyle = COLORS.YELLOW;
@@ -531,7 +504,6 @@ window.onload = function() {
       sceneCtx.fill();
     });
 
-    // Draw carrots
     carrotList.forEach(carrot => {
       if (images["carrot"] && images["carrot"].complete) {
         sceneCtx.drawImage(images["carrot"], carrot.x, carrot.y, carrot.width, carrot.height);
@@ -543,7 +515,6 @@ window.onload = function() {
       }
     });
 
-    // Draw beer power-ups
     beerList.forEach(beer => {
       if (images["beer"] && images["beer"].complete) {
         sceneCtx.drawImage(images["beer"], beer.x, beer.y, beer.width, beer.height);
@@ -553,7 +524,6 @@ window.onload = function() {
       }
     });
 
-    // Draw pills
     pillList.forEach(pill => {
       if (images["pill"] && images["pill"].complete) {
         sceneCtx.drawImage(images["pill"], pill.x, pill.y, pill.width, pill.height);
@@ -563,8 +533,6 @@ window.onload = function() {
       }
     });
 
-    // Draw rabbit:
-    // Use the drunk image if beer is active; otherwise use the normal rabbit image.
     if (beerActive && images["rabbit_drunk"] && images["rabbit_drunk"].complete) {
       sceneCtx.drawImage(images["rabbit_drunk"], rabbit.x, rabbit.y, rabbit.width, rabbit.height);
     } else if (images["rabbit"] && images["rabbit"].complete) {
@@ -574,7 +542,6 @@ window.onload = function() {
       sceneCtx.fillRect(rabbit.x, rabbit.y, rabbit.width, rabbit.height);
     }
 
-    // Draw invincibility outline if active
     if (invincible) {
       sceneCtx.strokeStyle = COLORS.ORANGE;
       sceneCtx.lineWidth = 4;
@@ -583,13 +550,11 @@ window.onload = function() {
       sceneCtx.stroke();
     }
 
-    // Draw drunk overlay if beer is active
     if (beerActive) {
       sceneCtx.fillStyle = "rgba(200,200,0,0.2)";
       sceneCtx.fillRect(0, 0, WIDTH, HEIGHT);
     }
 
-    // Draw heavy rain drops
     if (score >= 3000) {
       rainDrops.forEach(drop => {
         sceneCtx.strokeStyle = "rgb(173,216,230)";
@@ -600,26 +565,22 @@ window.onload = function() {
       });
     }
 
-    // Now draw the offscreen canvas onto the main canvas with offsets
     ctx.fillStyle = COLORS.BLACK;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
     ctx.drawImage(sceneCanvas, offsetX, offsetY);
 
-    // Draw lightning flash overlay if active
     if (lightningStrikeActive) {
       const flashAlpha = 200 * (lightningStrikeCounter / LIGHTNING_STRIKE_DURATION);
       ctx.fillStyle = `rgba(255,255,255,${flashAlpha / 255})`;
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
     }
 
-    // --- Draw HUD ---
     ctx.font = "24px sans-serif";
     ctx.fillStyle = (storedHighScore > 0 && score >= storedHighScore - 50 && score < storedHighScore) ? COLORS.RED : COLORS.BLACK;
     ctx.fillText("Score: " + score, 10, 30);
     ctx.fillStyle = COLORS.BLACK;
     ctx.fillText("High Score: " + storedHighScore, WIDTH - 200, 30);
 
-    // If spare life is active, draw the pill icon (or text)
     if (spareLife) {
       if (images["pill"] && images["pill"].complete) {
         ctx.drawImage(images["pill"], WIDTH - 100, 50, 40, 40);
@@ -629,7 +590,6 @@ window.onload = function() {
       }
     }
 
-    // Draw New High Score message
     if (newHighTimer > 0) {
       const alpha = newHighTimer / NEW_HIGH_DURATION;
       ctx.font = "48px sans-serif";
@@ -637,7 +597,6 @@ window.onload = function() {
       ctx.fillText("New High Score!", WIDTH / 2 - 100, 50);
     }
 
-    // Draw the start screen if game hasn't started
     if (!gameStarted) {
       ctx.fillStyle = COLORS.SKY_BLUE;
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -668,7 +627,6 @@ window.onload = function() {
       ctx.fillText(startText, WIDTH / 2 - textWidth / 2, HEIGHT - 50);
     }
 
-    // Draw game over screen if necessary
     if (gameOver) {
       ctx.font = "72px sans-serif";
       ctx.fillStyle = COLORS.RED;
@@ -686,6 +644,5 @@ window.onload = function() {
     }
   }
 
-  // Start the loop
   requestAnimationFrame(gameLoop);
 };
