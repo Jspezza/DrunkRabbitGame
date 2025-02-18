@@ -297,10 +297,25 @@
       // Start Game button: validates the player's name and starts the game.
       document.getElementById("startGameButton").addEventListener("click", function() {
         const nameInput = document.getElementById("playerNameInput").value.trim();
-        if (nameInput === "") {
-          alert("Please enter your name to start the game.");
+        const blacklistedWords = [
+          'nigger',
+          'nigga',
+          'niggers',
+          'chink',
+          'chinks',
+          'spic',
+          'wetback'
+          // Add any additional words as needed
+        ];
+        
+        const lowerName = nameInput.toLowerCase();
+        
+        // Check if the name is empty or contains any disallowed substrings.
+        if (nameInput === "" || blacklistedWords.some(word => lowerName.includes(word))) {
+          alert("Please enter a valid name without inappropriate language.");
           return;
         }
+        
         window.playerName = nameInput;
         document.getElementById("menuOverlay").style.display = "none";
         document.getElementById("changeSizeButton").style.display = "none";
