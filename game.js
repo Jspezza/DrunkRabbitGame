@@ -169,6 +169,10 @@ window.onload = function() {
   // --- Event Listeners ---
   document.addEventListener("keydown", function(e) {
     if (e.code === "Space") {
+      // Only allow starting or playing the game if a valid name has been set.
+      if (!window.playerName) {
+        return;
+      }
       if (!gameStarted) {
         gameStarted = true;
       } else if (gameOver) {
@@ -182,6 +186,10 @@ window.onload = function() {
   if ("ontouchstart" in window) {
     canvas.addEventListener("touchstart", function(e) {
       e.preventDefault();
+      // Only allow actions if a valid name has been set.
+      if (!window.playerName) {
+        return;
+      }
       if (!gameStarted) {
         gameStarted = true;
       } else if (gameOver) {
