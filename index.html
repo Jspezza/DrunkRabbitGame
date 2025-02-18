@@ -99,18 +99,6 @@
         margin: 0;
         font-size: 14px;
       }
-      /* On desktop, position the "Show Full Leaderboard" button absolutely
-         so it doesn't affect container size */
-      @media only screen and (min-width: 769px) {
-        #toggleFullLeaderboard {
-          position: absolute;
-          bottom: 5px;
-          right: 5px;
-          font-size: 14px;
-          padding: 3px 6px;
-          cursor: pointer;
-        }
-      }
       /* Mobile Leaderboard (horizontal layout) */
       @media only screen and (max-width: 768px) {
         #leaderboardContainer {
@@ -149,7 +137,7 @@
           border: none;
           border-radius: 3px;
         }
-        /* Mobile "Show Leaderboard" button – initially hidden */
+        /* Mobile "Show Leaderboard" button – initial state is hidden */
         #mobileLeaderboardShowButton {
           display: none;
           position: fixed;
@@ -228,8 +216,8 @@
       <ul id="leaderboardListTop"></ul>
       <!-- Mobile only: hide toggle button inside leaderboard -->
       <button id="mobileLeaderboardToggle">Hide</button>
-      <!-- Desktop: "Show Full Leaderboard" button is now positioned absolutely -->
-      <button id="toggleFullLeaderboard">Show Full Leaderboard</button>
+      <!-- Desktop still uses "Show Full Leaderboard" as before -->
+      <button id="toggleFullLeaderboard" style="margin-left: 10px; font-size: 14px;">Show Full Leaderboard</button>
     </div>
     
     <!-- Mobile Show Leaderboard Button (appears when leaderboard is hidden) -->
@@ -244,9 +232,11 @@
     
     <!-- Script to handle canvas scaling and menu interactions -->
     <script>
+      // Global variable for manual scaling.
       let customScale = null;
       const canvas = document.getElementById("gameCanvas");
       
+      // Scale the canvas based on the chosen manual scale or auto-fit.
       function scaleCanvas() {
         const gameWidth = 800;
         const gameHeight = 600;
@@ -262,13 +252,14 @@
       
       document.addEventListener('DOMContentLoaded', () => {
         scaleCanvas();
-        // On mobile, ensure the "Show Leaderboard" button starts hidden.
+        // On mobile devices, ensure the mobile show button starts hidden.
         if (window.innerWidth <= 768) {
           document.getElementById("mobileLeaderboardShowButton").style.display = "none";
         }
       });
       window.addEventListener('resize', scaleCanvas);
       
+      // Manual adjustment toggle and slider controls.
       const manualToggle = document.getElementById("manualToggle");
       const manualControls = document.getElementById("manualControls");
       const scaleSlider = document.getElementById("scaleSlider");
@@ -293,6 +284,7 @@
         }
       });
       
+      // Start Game button: validates the player's name and starts the game.
       document.getElementById("startGameButton").addEventListener("click", function() {
         const nameInput = document.getElementById("playerNameInput").value.trim();
         if (nameInput === "") {
@@ -307,6 +299,7 @@
         }
       });
       
+      // "Change Screen Size" button: shows the menu overlay.
       document.getElementById("changeSizeButton").addEventListener("click", function() {
         document.getElementById("menuOverlay").style.display = "flex";
       });
