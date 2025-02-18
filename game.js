@@ -590,41 +590,93 @@ window.onload = function() {
       }
     }
 
-    if (newHighTimer > 0) {
-      const alpha = newHighTimer / NEW_HIGH_DURATION;
-      ctx.font = "48px sans-serif";
-      ctx.fillStyle = `rgba(255,0,0,${alpha})`;
-      ctx.fillText("New High Score!", WIDTH / 2 - 100, 50);
-    }
-
+    // --- Improved Centered Instructions Screen ---
     if (!gameStarted) {
+      // Background for instructions
       ctx.fillStyle = COLORS.SKY_BLUE;
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
-      ctx.font = "24px sans-serif";
-      const instructions = [
-        "Drunk Rabbit Game",
-        "Press SPACE or tap to jump and start.",
-        "",
-        "Power-Ups:",
-        "  Coin: +100 points",
-        "  Carrot: Temporary invincibility",
-        "  Beer: Drunk Mode (invincibility, +100, -200 on collision)",
-        "  Pill: Grants a spare life",
-        "",
-        "Avoid obstacles!",
-        "Difficulty increases with your score."
-      ];
-      let yOffset = 50;
-      instructions.forEach(line => {
-        const textWidth = ctx.measureText(line).width;
-        ctx.fillStyle = COLORS.BLACK;
-        ctx.fillText(line, WIDTH / 2 - textWidth / 2, yOffset);
-        yOffset += 30;
-      });
+
+      // Define layout measurements
+      const titleHeight = 60;
+      const jumpInstructionsHeight = 60; // two lines
+      const gapBetweenJumpAndPowerups = 20;
+      const powerUpsTitleHeight = 40;
+      const powerUpsListHeight = 50 * 4; // 4 power-ups at 50px each
+      const gapBetweenPowerupsAndStart = 20;
+      const startPromptHeight = 40;
+      const totalHeight = titleHeight + jumpInstructionsHeight + gapBetweenJumpAndPowerups +
+                          powerUpsTitleHeight + powerUpsListHeight + gapBetweenPowerupsAndStart +
+                          startPromptHeight;
+      let currentY = (HEIGHT - totalHeight) / 2;
+
+      // Title
       ctx.font = "48px sans-serif";
-      const startText = "Press SPACE or tap to Start";
-      const textWidth = ctx.measureText(startText).width;
-      ctx.fillText(startText, WIDTH / 2 - textWidth / 2, HEIGHT - 50);
+      ctx.fillStyle = COLORS.BLACK;
+      let titleText = "Drunk Rabbit Game";
+      let titleWidth = ctx.measureText(titleText).width;
+      ctx.fillText(titleText, WIDTH / 2 - titleWidth / 2, currentY + 48);
+      currentY += titleHeight;
+
+      // Jump instructions
+      ctx.font = "24px sans-serif";
+      let jumpText1 = "Tap the screen (or press SPACE) to jump!";
+      let jumpText2 = "Faster taps yield higher jumps.";
+      let jumpWidth1 = ctx.measureText(jumpText1).width;
+      let jumpWidth2 = ctx.measureText(jumpText2).width;
+      ctx.fillText(jumpText1, WIDTH / 2 - jumpWidth1 / 2, currentY + 24);
+      ctx.fillText(jumpText2, WIDTH / 2 - jumpWidth2 / 2, currentY + 54);
+      currentY += jumpInstructionsHeight;
+
+      // Gap
+      currentY += gapBetweenJumpAndPowerups;
+
+      // Power-Ups Title
+      ctx.font = "28px sans-serif";
+      let powerUpTitle = "Power-Ups:";
+      let puTitleWidth = ctx.measureText(powerUpTitle).width;
+      ctx.fillText(powerUpTitle, WIDTH / 2 - puTitleWidth / 2, currentY + 28);
+      currentY += powerUpsTitleHeight;
+
+      // Define block for power-ups list (80% of canvas width)
+      const blockWidth = WIDTH * 0.8;
+      const iconSize = 40;
+      const iconX = (WIDTH - blockWidth) / 2;
+      const textX = iconX + iconSize + 10;
+      const powerUps = [
+        { key: "coin", text: "Coin: +100 points" },
+        { key: "carrot", text: "Carrot: Temporary invincibility" },
+        { key: "beer", text: "Beer: Drunk Mode (invincibility, +100, -200 on collision)" },
+        { key: "pill", text: "Pill: Grants a spare life" }
+      ];
+      powerUps.forEach(pu => {
+        if (pu.key === "coin") {
+          ctx.beginPath();
+          ctx.fillStyle = COLORS.YELLOW;
+          ctx.arc(iconX + iconSize/2, currentY + iconSize/2, iconSize/2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          let img = images[pu.key];
+          if (img && img.complete) {
+            ctx.drawImage(img, iconX, currentY, iconSize, iconSize);
+          } else {
+            ctx.fillStyle = COLORS.BLACK;
+            ctx.fillRect(iconX, currentY, iconSize, iconSize);
+          }
+        }
+        ctx.font = "24px sans-serif";
+        ctx.fillStyle = COLORS.BLACK;
+        ctx.fillText(pu.text, textX, currentY + iconSize/2 + 8);
+        currentY += 50;
+      });
+
+      // Gap before start prompt
+      currentY += gapBetweenPowerupsAndStart;
+
+      // Start prompt
+      ctx.font = "36px sans-serif";
+      let startText = "Tap the screen or press SPACE to Start";
+      let startWidth = ctx.measureText(startText).width;
+      ctx.fillText(startText, WIDTH / 2 - startWidth / 2, currentY + 36);
     }
 
     if (gameOver) {
