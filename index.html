@@ -79,19 +79,21 @@
         z-index: 30;
         display: none;  /* initially hidden */
       }
-      /* Leaderboard Container for Desktop (vertical, top-right) */
+      /* Desktop Leaderboard Container */
       #leaderboardContainer {
         position: absolute;
         top: 10px;
         right: 10px;
-        background: rgba(255,255,255,0.8);
+        background: rgba(255,255,255,0.9);
         padding: 10px;
         border-radius: 5px;
         z-index: 25;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
       }
       #leaderboardContainer h2 {
         margin: 0 0 10px 0;
         font-size: 18px;
+        text-align: center;
       }
       #leaderboardContainer ul {
         list-style: none;
@@ -99,7 +101,15 @@
         margin: 0;
         font-size: 14px;
       }
-      /* Mobile Leaderboard (horizontal layout) */
+      #leaderboardContainer ul li {
+        margin: 4px 0;
+      }
+      /* Hide mobile-only buttons by default */
+      #mobileLeaderboardToggle,
+      #mobileLeaderboardShowButton {
+        display: none;
+      }
+      /* Mobile Leaderboard Styling */
       @media only screen and (max-width: 768px) {
         #leaderboardContainer {
           position: fixed;
@@ -127,8 +137,9 @@
           margin-right: 10px;
           font-size: 12px;
         }
-        /* Mobile hide toggle button inside the container */
+        /* Mobile-only toggle buttons */
         #mobileLeaderboardToggle {
+          display: inline-block;
           margin-left: auto;
           font-size: 12px;
           padding: 3px 6px;
@@ -137,7 +148,6 @@
           border: none;
           border-radius: 3px;
         }
-        /* Mobile "Show Leaderboard" button – initial state is hidden */
         #mobileLeaderboardShowButton {
           display: none;
           position: fixed;
@@ -210,13 +220,13 @@
     <!-- "Change Screen Size" button (appears on Game Over) -->
     <button id="changeSizeButton">Change Screen Size</button>
 
-    <!-- Leaderboard Container (always shows top 5) -->
+    <!-- Leaderboard Container -->
     <div id="leaderboardContainer">
       <h2>Top 5</h2>
       <ul id="leaderboardListTop"></ul>
-      <!-- Mobile only: hide toggle button inside leaderboard -->
+      <!-- Mobile-only toggle (hidden on desktop) -->
       <button id="mobileLeaderboardToggle">Hide</button>
-      <!-- Desktop still uses "Show Full Leaderboard" as before -->
+      <!-- Option to show the full leaderboard (visible on both desktop and mobile) -->
       <button id="toggleFullLeaderboard" style="margin-left: 10px; font-size: 14px;">Show Full Leaderboard</button>
     </div>
     
@@ -373,7 +383,7 @@
 
       window.submitScore = submitScore;
 
-      // Mobile Hide/Show Leaderboard Functionality
+      // Mobile Hide/Show Leaderboard Functionality (only applies on mobile)
       const mobileToggleBtn = document.getElementById("mobileLeaderboardToggle");
       const mobileShowBtn = document.getElementById("mobileLeaderboardShowButton");
       const leaderboardContainer = document.getElementById("leaderboardContainer");
